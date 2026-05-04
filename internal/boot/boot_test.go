@@ -1,6 +1,7 @@
 package boot
 
 import (
+	"errors"
 	"strings"
 	"testing"
 )
@@ -25,16 +26,85 @@ func TestValidateRequiredEnvReportsEachMissingVariable(t *testing.T) {
 	}
 }
 
-func TestValidateRequiredEnvRejectsInvalidOrgCreationEnabled(t *testing.T) {
-	setAllRequiredEnv(t)
-	t.Setenv("ORG_CREATION_ENABLED", "yes")
-
-	err := ValidateRequiredEnv()
-	if err == nil {
-		t.Fatal("ValidateRequiredEnv() error = nil, want invalid ORG_CREATION_ENABLED")
+func TestValidateRequiredEnvTreatsWhitespaceOnlyAsMissing(t *testing.T) {
+	whitespaceCandidates := []string{
+		"DEFAULT_ORG_SLUG",
+		"DEFAULT_ORG_NAME",
+		"TEAM_APP_SHARED_SECRET",
+		"TEAM_APP_URL",
+		"MULTICA_BASE_URL",
+		"MULTICA_WS_URL",
+		"TEAM_APP_SYSTEM_USER_PAT",
+		"TEAM_APP_SYSTEM_USER_ID",
 	}
-	if got := MissingEnvVar(err); got != "ORG_CREATION_ENABLED" {
-		t.Fatalf("MissingEnvVar() = %q, want ORG_CREATION_ENABLED", got)
+	for _, name := range whitespaceCandidates {
+		t.Run(name, func(t *testing.T) {
+			setAllRequiredEnv(t)
+			t.Setenv(name, "   \t  ")
+
+			err := ValidateRequiredEnv()
+			if err == nil {
+				t.Fatalf("ValidateRequiredEnv() error = nil, want %s rejected as whitespace-only", name)
+			}
+			if got := MissingEnvVar(err); got != name {
+				t.Fatalf("MissingEnvVar() = %q, want %q", got, name)
+			}
+		})
+	}
+}
+
+func TestValidateRequiredEnvRejectsInvalidOrgCreationEnabled(t *testing.T) {
+	invalid := []string{"yes", "no", "1", "0", "TRUEISH", "off", "on", " "}
+	for _, value := range invalid {
+		t.Run(value, func(t *testing.T) {
+			setAllRequiredEnv(t)
+			t.Setenv("ORG_CREATION_ENABLED", value)
+
+			err := ValidateRequiredEnv()
+			if err == nil {
+				t.Fatalf("ValidateRequiredEnv() error = nil, want invalid ORG_CREATION_ENABLED %q", value)
+			}
+			if got := MissingEnvVar(err); got != "ORG_CREATION_ENABLED" {
+				t.Fatalf("MissingEnvVar() = %q, want ORG_CREATION_ENABLED", got)
+			}
+		})
+	}
+}
+
+func TestValidateRequiredEnvAcceptsOrgCreationEnabledCaseInsensitively(t *testing.T) {
+	valid := []string{"true", "false", "TRUE", "FALSE", "True", "False", "tRuE", "fAlSe"}
+	for _, value := range valid {
+		t.Run(value, func(t *testing.T) {
+			setAllRequiredEnv(t)
+			t.Setenv("ORG_CREATION_ENABLED", value)
+
+			if err := ValidateRequiredEnv(); err != nil {
+				t.Fatalf("ValidateRequiredEnv() error = %v, want nil for ORG_CREATION_ENABLED=%q", err, value)
+			}
+		})
+	}
+}
+
+func TestValidateRequiredEnvSucceedsWhenAllVarsSet(t *testing.T) {
+	setAllRequiredEnv(t)
+	if err := ValidateRequiredEnv(); err != nil {
+		t.Fatalf("ValidateRequiredEnv() error = %v, want nil", err)
+	}
+}
+
+func TestMissingEnvVarReturnsEmptyForNonEnvError(t *testing.T) {
+	if got := MissingEnvVar(errors.New("unrelated")); got != "" {
+		t.Fatalf("MissingEnvVar(non-EnvError) = %q, want empty string", got)
+	}
+	if got := MissingEnvVar(nil); got != "" {
+		t.Fatalf("MissingEnvVar(nil) = %q, want empty string", got)
+	}
+}
+
+func TestEnvErrorIncludesNameInMessage(t *testing.T) {
+	e := EnvError{Name: "TEAM_APP_URL"}
+	if !strings.Contains(e.Error(), "TEAM_APP_URL") {
+		t.Fatalf("EnvError.Error() = %q, want it to mention the variable name", e.Error())
 	}
 }
 
