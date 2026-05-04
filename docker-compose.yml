@@ -1,0 +1,44 @@
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: team_app
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - team_app_db:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    environment:
+      DEFAULT_ORG_SLUG: ${DEFAULT_ORG_SLUG:-acme}
+      DEFAULT_ORG_NAME: ${DEFAULT_ORG_NAME:-Acme Inc}
+      ORG_CREATION_ENABLED: ${ORG_CREATION_ENABLED:-false}
+      TEAM_APP_SHARED_SECRET: ${TEAM_APP_SHARED_SECRET:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+      TEAM_APP_URL: ${TEAM_APP_URL:-https://team.multica.uittai.com}
+      MULTICA_BASE_URL: ${MULTICA_BASE_URL:-https://multica.uittai.com}
+      MULTICA_WS_URL: ${MULTICA_WS_URL:-wss://multica.uittai.com/ws}
+      TEAM_APP_SYSTEM_USER_PAT: ${TEAM_APP_SYSTEM_USER_PAT:-mpat_example}
+      TEAM_APP_SYSTEM_USER_ID: ${TEAM_APP_SYSTEM_USER_ID:-00000000-0000-0000-0000-000000000000}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@db:5432/team_app?sslmode=disable}
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      NEXT_PUBLIC_TEAM_APP_URL: ${NEXT_PUBLIC_TEAM_APP_URL:-http://localhost:3000}
+      NEXT_PUBLIC_TEAM_API_URL: ${NEXT_PUBLIC_TEAM_API_URL:-http://localhost:8080}
+    ports:
+      - "3000:3000"
+
+volumes:
+  team_app_db:
