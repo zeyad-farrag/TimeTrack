@@ -9,13 +9,19 @@ services:
       - "5432:5432"
     volumes:
       - team_app_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d team_app"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   api:
     build:
       context: .
       dockerfile: Dockerfile
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       DEFAULT_ORG_SLUG: ${DEFAULT_ORG_SLUG:-acme}
       DEFAULT_ORG_NAME: ${DEFAULT_ORG_NAME:-Acme Inc}
