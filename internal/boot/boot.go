@@ -1,6 +1,7 @@
 package boot
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -28,7 +29,8 @@ func (e EnvError) Error() string {
 }
 
 func MissingEnvVar(err error) string {
-	if envErr, ok := err.(EnvError); ok {
+	var envErr EnvError
+	if errors.As(err, &envErr) {
 		return envErr.Name
 	}
 	return ""

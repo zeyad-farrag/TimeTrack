@@ -79,8 +79,8 @@ func TestHealthzRejectsNonGETMethods(t *testing.T) {
 
 			r.ServeHTTP(rr, req)
 
-			if rr.Code == http.StatusOK {
-				t.Fatalf("/healthz %s status = %d, want non-200 (only GET is wired)", method, rr.Code)
+			if rr.Code != http.StatusMethodNotAllowed {
+				t.Fatalf("/healthz %s status = %d, want %d", method, rr.Code, http.StatusMethodNotAllowed)
 			}
 		})
 	}
