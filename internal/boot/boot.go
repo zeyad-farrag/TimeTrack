@@ -16,6 +16,7 @@ var requiredEnvVars = []string{
 	"MULTICA_WS_URL",
 	"TEAM_APP_SYSTEM_USER_PAT",
 	"TEAM_APP_SYSTEM_USER_ID",
+	"DATABASE_URL",
 }
 
 type EnvError struct {

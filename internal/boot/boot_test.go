@@ -36,6 +36,7 @@ func TestValidateRequiredEnvTreatsWhitespaceOnlyAsMissing(t *testing.T) {
 		"MULTICA_WS_URL",
 		"TEAM_APP_SYSTEM_USER_PAT",
 		"TEAM_APP_SYSTEM_USER_ID",
+		"DATABASE_URL",
 	}
 	for _, name := range whitespaceCandidates {
 		t.Run(name, func(t *testing.T) {
@@ -120,6 +121,7 @@ func setAllRequiredEnv(t *testing.T) {
 		"MULTICA_WS_URL":           "wss://multica.uittai.com/ws",
 		"TEAM_APP_SYSTEM_USER_PAT": "mpat_example",
 		"TEAM_APP_SYSTEM_USER_ID":  "00000000-0000-0000-0000-000000000000",
+		"DATABASE_URL":             "postgresql://postgres:postgres@db:5432/team_app?sslmode=disable",
 	}
 	for name, value := range values {
 		t.Setenv(name, value)

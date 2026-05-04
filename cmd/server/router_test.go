@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -11,8 +12,9 @@ import (
 
 func TestHealthzReturnsOKJSON(t *testing.T) {
 	r := NewRouter()
+	ctx := context.Background()
 
-	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
+	req := httptest.NewRequestWithContext(ctx, http.MethodGet, "/healthz", nil)
 	rr := httptest.NewRecorder()
 
 	r.ServeHTTP(rr, req)
@@ -41,8 +43,9 @@ func TestHealthzReturnsOKJSON(t *testing.T) {
 
 func TestUnknownRouteReturns404(t *testing.T) {
 	r := NewRouter()
+	ctx := context.Background()
 
-	req := httptest.NewRequest(http.MethodGet, "/does-not-exist", nil)
+	req := httptest.NewRequestWithContext(ctx, http.MethodGet, "/does-not-exist", nil)
 	rr := httptest.NewRecorder()
 
 	r.ServeHTTP(rr, req)
@@ -54,8 +57,9 @@ func TestUnknownRouteReturns404(t *testing.T) {
 
 func TestApiV1GroupIsMountedAndEmpty(t *testing.T) {
 	r := NewRouter()
+	ctx := context.Background()
 
-	req := httptest.NewRequest(http.MethodGet, "/api/v1/anything", nil)
+	req := httptest.NewRequestWithContext(ctx, http.MethodGet, "/api/v1/anything", nil)
 	rr := httptest.NewRecorder()
 
 	r.ServeHTTP(rr, req)
@@ -70,7 +74,7 @@ func TestHealthzRejectsNonGETMethods(t *testing.T) {
 
 	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodPatch} {
 		t.Run(method, func(t *testing.T) {
-			req := httptest.NewRequest(method, "/healthz", nil)
+			req := httptest.NewRequestWithContext(context.Background(), method, "/healthz", nil)
 			rr := httptest.NewRecorder()
 
 			r.ServeHTTP(rr, req)

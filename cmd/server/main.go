@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/multica-ai/team-app/internal/boot"
@@ -33,7 +35,15 @@ func main() {
 	}
 	defer pool.Close()
 
-	if err := http.ListenAndServe(":8080", NewRouter()); err != nil {
+	server := &http.Server{
+		Addr:              ":8080",
+		Handler:           NewRouter(),
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       120 * time.Second,
+	}
+	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		slog.Error("http server stopped", "error", err)
 		os.Exit(1)
 	}

@@ -2,15 +2,15 @@ services:
   db:
     image: pgvector/pgvector:pg17
     environment:
-      POSTGRES_DB: team_app
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
     ports:
       - "5432:5432"
     volumes:
       - team_app_db:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d team_app"]
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -23,16 +23,16 @@ services:
       db:
         condition: service_healthy
     environment:
-      DEFAULT_ORG_SLUG: ${DEFAULT_ORG_SLUG:-acme}
-      DEFAULT_ORG_NAME: ${DEFAULT_ORG_NAME:-Acme Inc}
-      ORG_CREATION_ENABLED: ${ORG_CREATION_ENABLED:-false}
-      TEAM_APP_SHARED_SECRET: ${TEAM_APP_SHARED_SECRET:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
-      TEAM_APP_URL: ${TEAM_APP_URL:-https://team.multica.uittai.com}
-      MULTICA_BASE_URL: ${MULTICA_BASE_URL:-https://multica.uittai.com}
-      MULTICA_WS_URL: ${MULTICA_WS_URL:-wss://multica.uittai.com/ws}
-      TEAM_APP_SYSTEM_USER_PAT: ${TEAM_APP_SYSTEM_USER_PAT:-mpat_example}
-      TEAM_APP_SYSTEM_USER_ID: ${TEAM_APP_SYSTEM_USER_ID:-00000000-0000-0000-0000-000000000000}
-      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@db:5432/team_app?sslmode=disable}
+      DEFAULT_ORG_SLUG: ${DEFAULT_ORG_SLUG:?DEFAULT_ORG_SLUG is required}
+      DEFAULT_ORG_NAME: ${DEFAULT_ORG_NAME:?DEFAULT_ORG_NAME is required}
+      ORG_CREATION_ENABLED: ${ORG_CREATION_ENABLED:?ORG_CREATION_ENABLED is required}
+      TEAM_APP_SHARED_SECRET: ${TEAM_APP_SHARED_SECRET:?TEAM_APP_SHARED_SECRET is required}
+      TEAM_APP_URL: ${TEAM_APP_URL:?TEAM_APP_URL is required}
+      MULTICA_BASE_URL: ${MULTICA_BASE_URL:?MULTICA_BASE_URL is required}
+      MULTICA_WS_URL: ${MULTICA_WS_URL:?MULTICA_WS_URL is required}
+      TEAM_APP_SYSTEM_USER_PAT: ${TEAM_APP_SYSTEM_USER_PAT:?TEAM_APP_SYSTEM_USER_PAT is required}
+      TEAM_APP_SYSTEM_USER_ID: ${TEAM_APP_SYSTEM_USER_ID:?TEAM_APP_SYSTEM_USER_ID is required}
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
     ports:
       - "8080:8080"
 

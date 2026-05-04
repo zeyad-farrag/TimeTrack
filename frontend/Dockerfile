@@ -19,6 +19,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 RUN corepack enable
-COPY --from=builder /app ./
+COPY --chown=node:node --from=builder /app ./
 EXPOSE 3000
+USER node
 CMD ["pnpm", "start"]
