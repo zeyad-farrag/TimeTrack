@@ -40,6 +40,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    env_file:
+      - path: ./frontend/.env.local
+        required: false
     environment:
       NEXT_PUBLIC_TEAM_APP_URL: ${NEXT_PUBLIC_TEAM_APP_URL:-http://localhost:3000}
       NEXT_PUBLIC_TEAM_API_URL: ${NEXT_PUBLIC_TEAM_API_URL:-http://localhost:8080}

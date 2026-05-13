@@ -36,8 +36,9 @@ func main() {
 	defer pool.Close()
 
 	server := &http.Server{
-		Addr:              ":8080",
-		Handler:           NewRouter(),
+		Addr:    ":8080",
+		Handler: NewRouter(),
+		// TIME-RULE: keep direct time.Duration constants in boot wiring only; inject clocks in service code.
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       30 * time.Second,
 		WriteTimeout:      30 * time.Second,
