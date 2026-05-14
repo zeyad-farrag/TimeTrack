@@ -9,6 +9,7 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     services:
       postgres:
         image: pgvector/pgvector:pg17
@@ -32,6 +33,7 @@ jobs:
 
   frontend:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -47,5 +49,6 @@ jobs:
 
   migrate-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - run: echo "Story 1.6 lands the migration runner"

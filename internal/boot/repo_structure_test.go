@@ -51,10 +51,25 @@ func TestGoModDirectRequiresIncludeAllArchitecturePinnedModules(t *testing.T) {
 		"github.com/prometheus/client_golang",
 	}
 	body := readRepoFile(t, "go.mod")
+	lines := strings.Split(body, "\n")
 	for _, mod := range required {
-		// Look for "<mod> v" (require line) — matches both single and grouped require blocks.
-		if !strings.Contains(body, mod+" v") {
-			t.Errorf("go.mod missing direct require for %s", mod)
+		// AC1 requires DIRECT requires. A line that contains the module path AND
+		// a `v…` version token AND does NOT carry an `// indirect` marker counts
+		// as direct. Handles both `require <mod> v…` and grouped require blocks.
+		found := false
+		needle := mod + " v"
+		for _, line := range lines {
+			if !strings.Contains(line, needle) {
+				continue
+			}
+			if strings.Contains(line, "// indirect") {
+				continue
+			}
+			found = true
+			break
+		}
+		if !found {
+			t.Errorf("go.mod missing DIRECT require for %s (indirect-only references do not satisfy AC1)", mod)
 		}
 	}
 }

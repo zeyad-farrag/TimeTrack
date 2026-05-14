@@ -13,13 +13,11 @@ import (
 )
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil)).With(
-		"org_id", "",
-		"workspace_id", "",
-		"actor_user_id", "",
-		"outcome", "",
-		"duration_ms", 0,
-	)
+	// Lean base logger. Per-request fields (org_id, workspace_id, actor_user_id,
+	// outcome, duration_ms) are attached by request middleware via logger.With(...)
+	// once the values are actually known — pre-allocating zero/empty values here
+	// would emit them on every log line and drown out real signal.
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
 
 	if err := boot.ValidateRequiredEnv(); err != nil {
