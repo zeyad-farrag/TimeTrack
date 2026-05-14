@@ -36,10 +36,15 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      # Enable pnpm BEFORE setup-node so the latter can locate `pnpm` on PATH
+      # to compute the store path for its built-in cache.
+      - name: Enable corepack (pnpm)
+        run: corepack enable
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: corepack enable
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
         working-directory: frontend
       - run: pnpm lint
